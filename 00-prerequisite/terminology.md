@@ -16,6 +16,8 @@ GMT - Greenwich Mean Time 格林尼治标准时间
 
 JAR - <u>J</u>ava <u>Ar</u>chive File
 
+JIT - Just in Time
+
 JMM - <u>J</u>ava <u>M</u>emory <u>M</u>odel
 
 JMS - Java Message Service
