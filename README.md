@@ -10,3 +10,6 @@ Aileen's study note of Java.
 ## Refs & Readings
 
 1. [Oracle Java SE Specifications](https://docs.oracle.com/javase/specs/index.html)
+2. [Java成神之路 by Hollis](https://hollischuang.github.io/toBeTopJavaer/#/)
+3. [JavaGuide](https://snailclimb.gitee.io/javaguide/#/)
+4. [Java教程 by 廖雪峰](https://www.liaoxuefeng.com/wiki/1252599548343744)

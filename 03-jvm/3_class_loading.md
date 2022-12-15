@@ -185,7 +185,100 @@ attribute_info {
 
 ## 类加载机制
 
+JVM会动态地加载、连接和初始化类和接口，所谓动态，是指在类/接口第一次被使用时才会去加载，而不是在JVM启动的初始就一次性加载。
+
+### 1. 加载 Loading
+
+> Loading is the process of finding the binary representation of a class or interface type with a particular name and
+> creating a class or interface from that binary representation.
+
+加载阶段，将类/接口对应的.class文件中的二进制字节流读入到JVM中，并在方法区中为要加载的类/接口创建对应的java.lang.Class对象。
+
+### 2. 连接 Linking
+
+> Linking is the process of taking a class or interface and combining it into the run-time state of the Java Virtual
+> Machine so that it can be executed.
+>
+> Linking a class or interface involves verifying and preparing that class or interface, its direct superclass, its
+> direct superinterfaces, and its element type (if it is an array type), if necessary. Linking also involves resolution
+> of
+> symbolic references in the class or interface, though not necessarily at the same time as the class or interface is
+> verified and prepared.
+
+#### 2.1 验证 Verification
+
+验证阶段，确保读入的.class文件中的内容满足当前JVM的[约束要求][Constraints on Java Virtual Machine Code]。
+
+#### 2.2 准备 Preparation
+
+准备阶段，为要加载的类/接口中的静态变量在方法区中分配内存空间，且赋予默认值。可以在loading和初始化之间的任意时间执行。
+
+#### 2.3 解析 Resolution
+
+> Resolution is the process of dynamically determining one or more concrete values from a symbolic reference in the
+> run-time constant pool. Initially, all symbolic references in the run-time constant pool are unresolved.
+
+解析阶段，对运行时常量池中的符号引用进行解析。
+
+### 3. 初始化 Initialization
+
+> Initialization of a class or interface consists of executing the class or interface initialization method
+> &lt;clinit&gt;.
+
+初始化阶段，执行类/接口的初始化方法[&lt;clinit&gt;][Class Initialization Methods]。
+
+&lt;clinit&gt;方法由编译器自动生成，其中主要包括类/接口中定义的对静态变量的赋值语句和静态代码块中的语句。
+
+JVM负责保证类初始化过程的线程安全。
+
+**触发类/接口初始化的情况：**
+
+1. 调用new, getstatic, putstatic, 或者invokestatic中的任意一条Java虚拟机指令，都会触发对应的类/接口的初始化。
+
+2. 对2 (REF_getStatic), 4 (REF_putStatic), 6 (REF_invokeStatic), 或者8 (REF_newInvokeSpecial)
+   进行方法句柄解析所得到的java.lang.invoke.MethodHandle实例第一次被调用时。
+
+3. 调用类库中的某些反射方法时会触发对应类/接口的初始化，例如Class.forname("...")方法或者newInstance()方法等。
+
+4. 如果子类被初始化，则会触发父类的初始化。
+
+5. 声明了non-abstract, non-static方法的接口，如果其直接或者间接实现类被初始化，则会触发该接口的初始化。
+
+6. JVM启动的时候会创建和初始化initial类/接口，并调用其中的main方法。
+
+**不会触发类/接口初始化的情况：**
+
+1. 通过子类调用父类的静态变量，不会导致子类的初始化，但父类会初始化。
+2. 通过定义数组来引用类，不会导致该类的初始化。
+3. 调用类中定义的常量，不会导致该类的初始化。
+
+**初始化顺序：**
+
+1. 父类的静态变量和静态代码块，按照声明的顺序
+2. 子类的静态变量和静态代码块，按照声明的顺序
+3. 父类的成员变量和非静态代码块，按照声明顺序
+4. 父类的构造函数
+5. 子类的成员变量和非静态代码块，按照声明顺序
+6. 子类的构造函数
+
+### 4. 使用 Using
+
+### 5. 卸载 Unloading
+
+类的卸载是指回收该类的Class对象。
+
+卸载需要满足的条件：
+
+1. 该类所有的实例都已经被回收；
+2. 该类没有在其他地方被引用；
+3. 该类的类加载器已经被回收。
+
 ## 类加载器
+
+# Refs
+
+1. [Chapter 4. The class File Format](https://docs.oracle.com/javase/specs/jvms/se19/html/jvms-4.html)
+2. [Chapter 5. Loading, Linking, and Initializing](https://docs.oracle.com/javase/specs/jvms/se19/html/jvms-5.html)
 
 <!-------------------------- Links --------------------------->
 
@@ -206,3 +299,7 @@ attribute_info {
 [Class Initialization Methods]: https://docs.oracle.com/javase/specs/jvms/se19/html/jvms-2.html#jvms-2.9.2
 
 [Table 4.6-A. Method access and property flags]: https://docs.oracle.com/javase/specs/jvms/se19/html/jvms-4.html#jvms-4.6-200-A.1
+
+[Constraints on Java Virtual Machine Code]: https://docs.oracle.com/javase/specs/jvms/se19/html/jvms-4.html#jvms-4.9
+
+[Class Initialization Methods]: https://docs.oracle.com/javase/specs/jvms/se19/html/jvms-2.html#jvms-2.9.2
