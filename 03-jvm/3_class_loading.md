@@ -275,6 +275,27 @@ JVM负责保证类初始化过程的线程安全。
 
 ## 类加载器
 
+### JVM提供的类加载器
+
+#### BootstrapClassLoader 启动类加载器
+
+最高一层的类加载器，由C++实现，属于JVM的一部分，负责加载JAVA_HOME/lib目录或者-Xbootclasspath参数指定的目录中的能被JVM识别的类。
+
+#### ExtensionClassLoader 扩展类加载器
+
+在sun.misc.Launcher$ExtClassLoader类中由Java实现，不属于JVM的一部分，负责加载JRE_HOME/lib/ext目录或者java.ext.dirs系统变量指定的目录中的jar包。
+
+#### AppClassLoader 应用程序类加载器
+
+在sun.misc.Launcher$AppClassLoader类中由Java实现，不属于JVM的一部分，负责加载应用程序classpath路径下的jar包和类，可以通过调用ClassLoader.getSystemClassLoader()
+方法获得。
+
+### 用户自定义的类加载器
+
+### 双亲委派模型 Parents Delegation Model
+
+当一个子类加载器收到类加载请求时，首先会尝试把该请求委派给父类加载器，依次往上委派直到最高层的类加载器。如果父类加载器无法完成请求，则子类加载器才会尝试自己去处理。
+
 # Refs
 
 1. [Chapter 4. The class File Format](https://docs.oracle.com/javase/specs/jvms/se19/html/jvms-4.html)
