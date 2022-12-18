@@ -6,9 +6,9 @@
 
 ## Java中常量池
 
-## Class常量池(静态常量池)
+## Class常量池 (静态常量池)
 
-.class文件中的常量池，包含字面量、类和方法的信息(符号引用)。
+.class文件中的常量池，主要包含字面量 (literal) 和符号引用 (symbolic references)。
 
 符号引用包括以下常量：
 

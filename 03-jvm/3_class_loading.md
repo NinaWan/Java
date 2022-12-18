@@ -283,7 +283,7 @@ JVM负责保证类初始化过程的线程安全。
 
 #### ExtensionClassLoader 扩展类加载器
 
-在sun.misc.Launcher$ExtClassLoader类中由Java实现，不属于JVM的一部分，负责加载JRE_HOME/lib/ext目录或者java.ext.dirs系统变量指定的目录中的jar包。
+在sun.misc.Launcher$ExtClassLoader类中由Java实现，不属于JVM的一部分，负责加载JAVA_HOME/lib/ext目录或者java.ext.dirs系统变量指定的目录中的jar包和类。
 
 #### AppClassLoader 应用程序类加载器
 
@@ -295,6 +295,8 @@ JVM负责保证类初始化过程的线程安全。
 ### 双亲委派模型 Parents Delegation Model
 
 当一个子类加载器收到类加载请求时，首先会尝试把该请求委派给父类加载器，依次往上委派直到最高层的类加载器。如果父类加载器无法完成请求，则子类加载器才会尝试自己去处理。
+
+双亲委派模型中，类加载器之间的父子关系是通过组合(composition)实现的，而不是通过继承。
 
 # Refs
 
