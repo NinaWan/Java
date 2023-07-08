@@ -38,6 +38,10 @@ threshold，扩容的阈值，capacity*loadFactor
 
 可以看出，遍历链表的时候是从前往后遍历，同时进行表头插入，所以扩容后链表中节点的顺序与扩容前的顺序是不同的
 
+### put(K key, V value)
+
+1.
+
 ### get(Object key)
 
 key => hash => index => 遍历链表 => key.hash==entry.hash && (key== entry.key || key.equals(entry.key))
@@ -54,6 +58,85 @@ key => hash => index => 遍历链表 => key.hash==entry.hash && (key== entry.key
                 * 重新计算该entry在table数组中对应的位置；
                 * 将该entry插入到newTable中对应位置的链表的表头；
 3. update threshold to min(newCapacity*loadFactor, MAXIMUM_CAPACITY+1)。
+
+## 死循环问题
+
+### 问题
+
+JDK8之前，多线程并发场景下，程序hang在HashMap.get()方法，导致CPU使用100%。
+
+### 原因
+
+当向hashmap中添加新的元素后，如果size大于等于设定的threshold，需要将table扩容到原来的2倍，过程中需要将原table中的数据迁移到扩容后的table中，
+在迁移的过程中，需要对已有元素进行rehash和reindex，该过程会导致新table中链表成环，当调用get()方法而对应key不存在时，便会陷入链表死循环中。
+
+### 举例说明
+
+```
+void transfer(Entry[] newTable, boolean rehash) {
+    int newCapacity = newTable.length;
+    for (Entry<K,V> e : table) {
+        while(null != e) {
+            Entry<K,V> next = e.next;
+            if (rehash) {
+                e.hash = null == e.key ? 0 : hash(e.key);
+            }
+            int i = indexFor(e.hash, newCapacity);
+            e.next = newTable[i];
+            newTable[i] = e;
+            e = next;
+        }
+    }
+}
+```
+
+Assume oldTab[i] = 7->3->null，现有两个线程同时执行transfer方法。
+
+因为newTab是局部变量，所以线程1和线程2各自拥有自己的newTab。
+
+**Phase 1:** 线程1第一次执行到`Entry<K,V> next = e.next;`时被挂起：
+
+线程1: e = 7, next = 3;
+
+newTab1[i] = null;
+
+**Phase 2:** 线程2正常执行完整个方法：
+
+线程1: e = 7, next = 3;
+
+newTab1[i] = null;
+
+newTab2[i] = 3->7->null;
+
+table[i] = 3->7>null;
+
+**Phase 3:** 线程1继续执行完整个方法：
+
+`After 1st loop`:
+
+线程1: e = 3, next = 7;
+
+newTab1[i] = 7->null;
+
+3.next = 7;
+
+`After 2nd loop`:
+
+线程1: e = 7, next = null;
+
+newTab1[i] = 3->7-null;
+
+`After 3rd loop`:
+
+线程1： e = null;
+
+newTab1[i] = 7 <=> 3;
+
+7.next = 3;
+
+3.next = 7;
+
+出现链表循环！
 
 ## Q&A
 
